@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ 编程冒险 - 森林沙漠之旅</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #27ae60 0%, #1e8449 50%, #f39c12 100%);
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            max-width: 800px;
+            margin: 20px auto 0;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            height: 25px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60 0%, #f39c12 100%);
+            border-radius: 20px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .maps-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .map-section {
+            margin-bottom: 50px;
+        }
+
+        .map-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 15px 25px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .map-title.forest {
+            border-left-color: #27ae60;
+        }
+
+        .map-title.desert {
+            border-left-color: #f39c12;
+        }
+
+        .map-title h2 {
+            font-size: 1.8rem;
+            margin-right: 15px;
+        }
+
+        .map-title span {
+            opacity: 0.7;
+            font-size: 0.95rem;
+        }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .level-card {
+            background: linear-gradient(145deg, #16213e 0%, #1a1a2e 100%);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .level-card.forest:hover {
+            border-color: #27ae60;
+        }
+
+        .level-card.desert:hover {
+            border-color: #f39c12;
+        }
+
+        .level-card.completed {
+            border-color: #27ae60;
+        }
+
+        .level-card.completed::before {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            color: #27ae60;
+        }
+
+        .level-number {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            line-height: 35px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+
+        .level-card.forest .level-number {
+            background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+        }
+
+        .level-card.desert .level-number {
+            background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+        }
+
+        .level-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .level-card p {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .level-card .知识点 {
+            display: inline-block;
+            padding: 3px 10px;
+            background-color: rgba(39, 174, 96, 0.3);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: #27ae60;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, #16213e 0%, #1a1a2e 100%);
+            border-radius: 20px;
+            max-width: 800px;
+            width: 100%;
+            padding: 35px;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #fff;
+        }
+
+        .modal-header {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-header h2 {
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+        }
+
+        .modal-header .map-tag {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-right: 10px;
+        }
+
+        .modal-header .map-tag.forest {
+            background-color: rgba(39, 174, 96, 0.3);
+            color: #27ae60;
+        }
+
+        .modal-header .map-tag.desert {
+            background-color: rgba(243, 156, 18, 0.3);
+            color: #f39c12;
+        }
+
+        .question-section {
+            margin-bottom: 25px;
+        }
+
+        .question-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #27ae60;
+        }
+
+        .question-section p {
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 15px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .code-block {
+            background-color: #0d0d1a;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            border-left: 3px solid #27ae60;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .option:hover {
+            background-color: rgba(255,255,255,0.1);
+            border-color: rgba(39, 174, 96, 0.5);
+        }
+
+        .option.selected {
+            background-color: rgba(39, 174, 96, 0.2);
+            border-color: #27ae60;
+        }
+
+        .option.correct {
+            background-color: rgba(39, 174, 96, 0.2);
+            border-color: #27ae60;
+        }
+
+        .option.incorrect {
+            background-color: rgba(231, 76, 60, 0.2);
+            border-color: #e74c3c;
+        }
+
+        .option input[type="radio"] {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+        .option label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 1rem;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 25px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(39, 174, 96, 0.4);
+        }
+
+        .result-feedback {
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-feedback.success {
+            display: block;
+            background-color: rgba(39, 174, 96, 0.2);
+            border: 1px solid #27ae60;
+            color: #27ae60;
+        }
+
+        .result-feedback.fail {
+            display: block;
+            background-color: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(145deg, #16213e 0%, #1a1a2e 100%);
+            border-radius: 20px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .score-display.active {
+            display: block;
+        }
+
+        .score-display h2 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .score-display p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        .score-display .total-score {
+            font-size: 4rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #27ae60 0%, #f39c12 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .levels-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌲🏜️ C++ 编程冒险</h1>
+        <p>完成森林、沙漠两大地图的挑战，学习C++基础！</p>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%">
+                <span id="progressText">0/20</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="maps-container">
+        <!-- 森林地图 -->
+        <div class="map-section">
+            <div class="map-title forest">
+                <h2>🌲 森林关卡</h2>
+                <span>学习变量、条件判断、循环基础（10题）</span>
+            </div>
+            <div class="levels-grid">
+                <div class="level-card forest" onclick="openLevel(1)">
+                    <div class="level-number">1</div>
+                    <h3>森林入口 - 变量声明</h3>
+                    <p>声明变量记录英雄的生命值</p>
+                    <span class="知识点">变量声明</span>
+                </div>
+
+                <div class="level-card forest" onclick="openLevel(2)">
+                    <div class="level-number">2</div>
+                    <h3>遇见敌人 - if条件</h3>
+                    <p>判断敌人是否存在</p>
+                    <span class="知识点">if条件判断</span>
+                </div>
+
+                <div class="level-card forest" onclick="openLevel(3)">
+                    <div class="level-number">3</div>
+                    <h3>持续战斗 - while循环</h3>
+                    <p>使用while循环持续战斗</p>
+                    <span class="知识点">while循环</span>
+                </div>
+
+                <div class="level-card forest" onclick="openLevel(4)">
+                    <div class="level-number">4</div>
+                    <h3>攻击两次 - 循环次数</h3>
+                    <p>控制攻击的次数</p>
+                    <span class="知识点">循环控制</span>
+                </div>
+
+                <div class="level-card forest" onclick="openLevel(5)">
+                    <div class="level-number">5</div>
+                    <h3>建造围栏 - 函数调用</h3>
+                    <p>调用函数建造防御建筑</p>
+                    <span class="知识点">函数调用</span>
+                </div>
+
+                <div class="level-card forest" onclick="openLevel(6)">
+                    <div class="level-number">6</div>
+                    <h3>距离计算 - 运算</h3>
+                    <p>计算与敌人的距离</p>
+                    <span class="知识点">距离计算</span>
+                </div>
+
+                <div class="level-card forest" onclick="openLevel(7)">
+                    <div class="level-number">7</div>
+                    <h3>寻找敌人 - 查找</h3>
+                    <p>找到最近的敌人</p>
+                    <span class="知识点">查找元素</span>
+                </div>
+
+                <div class="level-card forest" onclick="openLevel(8)">
+                    <div class="level-number">8</div>
+                    <h3>保护村民 - if-else</h3>
+                    <p>根据情况采取不同行动</p>
+                    <span class="知识点">if-else分支</span>
+                </div>
+
+                <div class="level-card forest" onclick="openLevel(9)">
+                    <div class="level-number">9</div>
+                    <h3>坐标移动 - moveXY</h3>
+                    <p>移动到指定坐标位置</p>
+                    <span class="知识点">坐标移动</span>
+                </div>
+
+                <div class="level-card forest" onclick="openLevel(10)">
+                    <div class="level-number">10</div>
+                    <h3>技能冷却 - 标志位</h3>
+                    <p>判断技能是否冷却完毕</p>
+                    <span class="知识点">条件判断</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 沙漠地图 -->
+        <div class="map-section">
+            <div class="map-title desert">
+                <h2>🏜️ 沙漠关卡</h2>
+                <span>学习数组、遍历、综合应用（10题）</span>
+            </div>
+            <div class="levels-grid">
+                <div class="level-card desert" onclick="openLevel(11)">
+                    <div class="level-number">11</div>
+                    <h3>骆驼商队 - 数组声明</h3>
+                    <p>用数组记录商队数量</p>
+                    <span class="知识点">数组声明</span>
+                </div>
+
+                <div class="level-card desert" onclick="openLevel(12)">
+                    <div class="level-number">12</div>
+                    <h3>统计货物 - 数组遍历</h3>
+                    <p>遍历数组统计货物总量</p>
+                    <span class="知识点">数组遍历</span>
+                </div>
+
+                <div class="level-card desert" onclick="openLevel(13)">
+                    <div class="level-number">13</div>
+                    <h3>绿洲寻水 - 数组下标</h3>
+                    <p>访问数组中的特定元素</p>
+                    <span class="知识点">数组下标</span>
+                </div>
+
+                <div class="level-card desert" onclick="openLevel(14)">
+                    <div class="level-number">14</div>
+                    <h3>找出最大值 - 算法</h3>
+                    <p>从数组中找最大货物量</p>
+                    <span class="知识点">找最大值</span>
+                </div>
+
+                <div class="level-card desert" onclick="openLevel(15)">
+                    <div class="level-number">15</div>
+                    <h3>沙尘暴 - while循环</h3>
+                    <p>用while循环躲避沙尘暴</p>
+                    <span class="知识点">while循环</span>
+                </div>
+
+                <div class="level-card desert" onclick="openLevel(16)">
+                    <div class="level-number">16</div>
+                    <h3>篝火晚会 - for循环</h3>
+                    <p>用for循环点燃篝火</p>
+                    <span class="知识点">for循环</span>
+                </div>
+
+                <div class="level-card desert" onclick="openLevel(17)">
+                    <div class="level-number">17</div>
+                    <h3>平均分配 - 求平均值</h3>
+                    <p>计算货物的平均数量</p>
+                    <span class="知识点">求平均值</span>
+                </div>
+
+                <div class="level-card desert" onclick="openLevel(18)">
+                    <div class="level-number">18</div>
+                    <h3>沙漠寻宝 - 综合</h3>
+                    <p>综合运用知识寻找宝藏</p>
+                    <span class="知识点">综合应用</span>
+                </div>
+
+                <div class="level-card desert" onclick="openLevel(19)">
+                    <div class="level-number">19</div>
+                    <h3>数组翻转 - 反向遍历</h3>
+                    <p>反向遍历数组</p>
+                    <span class="知识点">反向遍历</span>
+                </div>
+
+                <div class="level-card desert" onclick="openLevel(20)">
+                    <div class="level-number">20</div>
+                    <h3>最终挑战 - 数组应用</h3>
+                    <p>综合运用数组知识</p>
+                    <span class="知识点">数组应用</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 题目弹窗 -->
+    <div class="modal" id="questionModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+
+            <div class="modal-header">
+                <h2 id="levelTitle">关卡 1</h2>
+                <span class="map-tag" id="mapTag">森林关卡</span>
+            </div>
+
+            <div class="question-section">
+                <h3>📜 题目描述</h3>
+                <p id="questionText"></p>
+                <div class="code-block" id="codeBlock"></div>
+            </div>
+
+            <div class="options" id="optionsContainer"></div>
+
+            <button class="submit-btn" onclick="submitAnswer()">提交答案</button>
+
+            <div class="result-feedback" id="resultFeedback"></div>
+        </div>
+    </div>
+
+    <!-- 总分显示 -->
+    <div class="score-display" id="scoreDisplay">
+        <h2>🎉 恭喜完成所有关卡！</h2>
+        <p>你的最终得分</p>
+        <div class="total-score" id="totalScore">0</div>
+        <p id="scoreMessage"></p>
+    </div>
+
+    <script>
+        const levels = [
+            // 森林关卡（1-10）
+            {
+                id: 1,
+                map: 'forest',
+                title: '森林入口 - 变量声明',
+                question: '在C++中，声明一个整型变量heroHealth来记录英雄的生命值100，正确的写法是？',
+                code: '// 声明变量记录英雄生命值\n???',
+                options: [
+                    { value: 'a', text: 'heroHealth = 100;' },
+                    { value: 'b', text: 'int heroHealth = 100;' },
+                    { value: 'c', text: 'var heroHealth = 100;' },
+                    { value: 'd', text: 'string heroHealth = 100;' }
+                ],
+                correct: 'b'
+            },
+            {
+                id: 2,
+                map: 'forest',
+                title: '遇见敌人 - if条件',
+                question: '判断enemy是否存在，如果存在就攻击。请问if条件的正确写法是？',
+                code: 'enemy = findNearestEnemy();\n???\n    hero.attack(enemy);\n}',
+                options: [
+                    { value: 'a', text: 'if (enemy == true)' },
+                    { value: 'b', text: 'if (enemy)' },
+                    { value: 'c', text: 'if (enemy != null)' },
+                    { value: 'd', text: 'if (enemy = true)' }
+                ],
+                correct: 'b'
+            },
+            {
+                id: 3,
+                map: 'forest',
+                title: '持续战斗 - while循环',
+                question: '使用while循环让英雄持续战斗。正确的循环条件是？',
+                code: 'while (???) {\n    enemy = hero.findNearestEnemy();\n    if (enemy) hero.attack(enemy);\n}',
+                options: [
+                    { value: 'a', text: 'true' },
+                    { value: 'b', text: '1' },
+                    { value: 'c', text: 'while' },
+                    { value: 'd', text: 'loop' }
+                ],
+                correct: 'a'
+            },
+            {
+                id: 4,
+                map: 'forest',
+                title: '攻击两次 - 循环次数',
+                question: '让英雄攻击敌人2次，需要循环几次？',
+                code: '// 攻击2次需要循环几次？\nfor (int i = 0; ???; i++) {\n    hero.attack(enemy);\n}',
+                options: [
+                    { value: 'a', text: 'i < 1' },
+                    { value: 'b', text: 'i < 2' },
+                    { value: 'c', text: 'i < 3' },
+                    { value: 'd', text: 'i <= 2' }
+                ],
+                correct: 'b'
+            },
+            {
+                id: 5,
+                map: 'forest',
+                title: '建造围栏 - 函数调用',
+                question: '调用buildXY函数在坐标(40, 52)处建造围栏。正确的写法是？',
+                code: '// 在坐标(40, 52)处建造围栏\n???',
+                options: [
+                    { value: 'a', text: 'buildXY("fence", 40, 52);' },
+                    { value: 'b', text: 'hero.build("fence", 40, 52);' },
+                    { value: 'c', text: 'build("fence", 40, 52);' },
+                    { value: 'd', text: 'buildXY(fence, 40, 52);' }
+                ],
+                correct: 'a'
+            },
+            {
+                id: 6,
+                map: 'forest',
+                title: '距离计算 - 运算',
+                question: '计算hero与enemy之间的距离并存储到distance变量。正确的写法是？',
+                code: '// 计算距离\n??? = hero.distanceTo(enemy);',
+                options: [
+                    { value: 'a', text: 'distance' },
+                    { value: 'b', text: 'int distance' },
+                    { value: 'c', text: 'double distance' },
+                    { value: 'd', text: 'var distance' }
+                ],
+                correct: 'c'
+            },
+            {
+                id: 7,
+                map: 'forest',
+                title: '寻找敌人 - 查找',
+                question: '使用findNearestEnemy()找到最近的敌人。正确的写法是？',
+                code: '// 找到最近的敌人\n??? enemy = hero.findNearestEnemy();',
+                options: [
+                    { value: 'a', text: 'enemy' },
+                    { value: 'b', text: 'string' },
+                    { value: 'c', text: 'var' },
+                    { value: 'd', text: 'object' }
+                ],
+                correct: 'a'
+            },
+            {
+                id: 8,
+                map: 'forest',
+                title: '保护村民 - if-else',
+                question: '如果敌人距离小于10就攻击，否则移动到(40, 37)。正确的写法是？',
+                code: 'if (??? < 10) {\n    hero.attack(enemy);\n} else {\n    hero.moveXY(40, 37);\n}',
+                options: [
+                    { value: 'a', text: 'enemy.distance' },
+                    { value: 'b', text: 'distance' },
+                    { value: 'c', text: 'enemy.distanceTo()' },
+                    { value: 'd', text: 'hero.distance' }
+                ],
+                correct: 'b'
+            },
+            {
+                id: 9,
+                map: 'forest',
+                title: '坐标移动 - moveXY',
+                question: '让英雄移动到坐标(36, 59)。正确的写法是？',
+                code: '// 移动到坐标(36, 59)\n???;',
+                options: [
+                    { value: 'a', text: 'hero.move(36, 59);' },
+                    { value: 'b', text: 'hero.moveXY(36, 59);' },
+                    { value: 'c', text: 'move.to(36, 59);' },
+                    { value: 'd', text: 'hero.goto(36, 59);' }
+                ],
+                correct: 'b'
+            },
+            {
+                id: 10,
+                map: 'forest',
+                title: '技能冷却 - 标志位',
+                question: '判断技能cleave是否冷却完毕（isReady返回true或false）。正确的条件判断是？',
+                code: 'if (???) {\n    hero.cleave();\n}',
+                options: [
+                    { value: 'a', text: 'hero.isReady(cleave)' },
+                    { value: 'b', text: 'hero.isReady("cleave")' },
+                    { value: 'c', text: 'isReady(cleave)' },
+                    { value: 'd', text: 'cleave.isReady()' }
+                ],
+                correct: 'b'
+            },
+            // 沙漠关卡（11-20）
+            {
+                id: 11,
+                map: 'desert',
+                title: '骆驼商队 - 数组声明',
+                question: '声明一个数组camelCount来记录5匹骆驼的数量。正确的写法是？',
+                code: '// 记录5匹骆驼的数量\n???',
+                options: [
+                    { value: 'a', text: 'int camelCount = 5;' },
+                    { value: 'b', text: 'int camelCount[5];' },
+                    { value: 'c', text: 'array camelCount[5];' },
+                    { value: 'd', text: 'camelCount[5] = int;' }
+                ],
+                correct: 'b'
+            },
+            {
+                id: 12,
+                map: 'desert',
+                title: '统计货物 - 数组遍历',
+                question: '用for循环遍历数组，计算货物总量。循环条件应该是什么？',
+                code: 'int goods[] = {10, 20, 30, 40, 50};\nint sum = 0;\nfor (int i = 0; ???; i++) {\n    sum += goods[i];\n}',
+                options: [
+                    { value: 'a', text: 'i < 4' },
+                    { value: 'b', text: 'i <= 5' },
+                    { value: 'c', text: 'i < 5' },
+                    { value: 'd', text: 'i > 5' }
+                ],
+                correct: 'c'
+            },
+            {
+                id: 13,
+                map: 'desert',
+                title: '绿洲寻水 - 数组下标',
+                question: '数组oasis存放了3个绿洲的距离：{5, 10, 15}。访问第2个绿洲的距离应该用什么下标？',
+                code: 'int oasis[] = {5, 10, 15};\n// 访问第2个绿洲\n???',
+                options: [
+                    { value: 'a', text: 'oasis[0]' },
+                    { value: 'b', text: 'oasis[1]' },
+                    { value: 'c', text: 'oasis[2]' },
+                    { value: 'd', text: 'oasis[3]' }
+                ],
+                correct: 'b'
+            },
+            {
+                id: 14,
+                map: 'desert',
+                title: '找出最大值 - 算法',
+                question: '从数组{30, 50, 20, 40}中找最大值。如果max初始为30，当i=1时，50>30成立吗？',
+                code: 'int goods[] = {30, 50, 20, 40};\nint max = goods[0];\nfor (int i = 1; i < 4; i++) {\n    if (goods[i] > max) max = goods[i];\n}',
+                options: [
+                    { value: 'a', text: '成立，max变为50' },
+                    { value: 'b', text: '不成立，max保持30' },
+                    { value: 'c', text: '报错' },
+                    { value: 'd', text: '无法判断' }
+                ],
+                correct: 'a'
+            },
+            {
+                id: 15,
+                map: 'desert',
+                title: '沙尘暴 - while循环',
+                question: '用while循环躲避4次沙尘暴。循环条件应该是什么？',
+                code: 'int count = 0;\nwhile (???) {\n    hero.dodge();\n    count++;\n}',
+                options: [
+                    { value: 'a', text: 'count < 4' },
+                    { value: 'b', text: 'count <= 4' },
+                    { value: 'c', text: 'count > 4' },
+                    { value: 'd', text: 'count == 4' }
+                ],
+                correct: 'a'
+            },
+            {
+                id: 16,
+                map: 'desert',
+                title: '篝火晚会 - for循环',
+                question: '用for循环点燃3堆篝火。循环条件应该是什么？',
+                code: 'for (int i = 0; ???; i++) {\n    hero.lightFire(i);\n}',
+                options: [
+                    { value: 'a', text: 'i < 2' },
+                    { value: 'b', text: 'i < 3' },
+                    { value: 'c', text: 'i <= 3' },
+                    { value: 'd', text: 'i > 3' }
+                ],
+                correct: 'b'
+            },
+            {
+                id: 17,
+                map: 'desert',
+                title: '平均分配 - 求平均值',
+                question: '计算数组{100, 200, 300}中货物的平均数量。正确的结果是？',
+                code: 'int goods[] = {100, 200, 300};\nint sum = 0;\nfor (int i = 0; i < 3; i++) sum += goods[i];\ndouble avg = ???;',
+                options: [
+                    { value: 'a', text: 'sum / 3' },
+                    { value: 'b', text: 'sum / 2' },
+                    { value: 'c', text: 'sum / 4' },
+                    { value: 'd', text: 'sum' }
+                ],
+                correct: 'a'
+            },
+            {
+                id: 18,
+                map: 'desert',
+                title: '沙漠寻宝 - 综合',
+                question: '数组treasure有4个元素：{100, 200, 300, 400}。访问第4个元素的正确下标是？',
+                code: 'int treasure[] = {100, 200, 300, 400};\n// treasure[?] = 400',
+                options: [
+                    { value: 'a', text: '0' },
+                    { value: 'b', text: '1' },
+                    { value: 'c', text: '2' },
+                    { value: 'd', text: '3' }
+                ],
+                correct: 'd'
+            },
+            {
+                id: 19,
+                map: 'desert',
+                title: '数组翻转 - 反向遍历',
+                question: '反向遍历数组{1,2,3,4,5}，从最后一个元素开始。第1次访问的下标应该是？',
+                code: 'int arr[] = {1, 2, 3, 4, 5};\n// 反向遍历，第1次访问\n???',
+                options: [
+                    { value: 'a', text: '0' },
+                    { value: 'b', text: '1' },
+                    { value: 'c', text: '3' },
+                    { value: 'd', text: '4' }
+                ],
+                correct: 'd'
+            },
+            {
+                id: 20,
+                map: 'desert',
+                title: '最终挑战 - 数组应用',
+                question: '计算数组{10, 20, 30}中第1个元素和第3个元素的和。正确结果是？',
+                code: 'int data[] = {10, 20, 30};\nint result = data[0] + data[2];\n// result = ???',
+                options: [
+                    { value: 'a', text: '30' },
+                    { value: 'b', text: '40' },
+                    { value: 'c', text: '50' },
+                    { value: 'd', text: '60' }
+                ],
+                correct: 'b'
+            }
+        ];
+
+        let currentLevel = null;
+        let completedLevels = new Set();
+        let score = 0;
+
+        function openLevel(levelId) {
+            currentLevel = levels.find(l => l.id === levelId);
+            if (!currentLevel) return;
+
+            document.getElementById('levelTitle').textContent = currentLevel.title;
+            document.getElementById('mapTag').textContent =
+                currentLevel.map === 'forest' ? '森林关卡' : '沙漠关卡';
+            document.getElementById('mapTag').className = 'map-tag ' + currentLevel.map;
+            document.getElementById('questionText').textContent = currentLevel.question;
+            document.getElementById('codeBlock').textContent = currentLevel.code;
+
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            currentLevel.options.forEach(opt => {
+                optionsContainer.innerHTML += `
+                    <div class="option" onclick="selectOption('${opt.value}')">
+                        <input type="radio" name="answer" value="${opt.value}">
+                        <label>${opt.text}</label>
+                    </div>
+                `;
+            });
+
+            document.getElementById('resultFeedback').className = 'result-feedback';
+            document.getElementById('resultFeedback').style.display = 'none';
+
+            document.getElementById('questionModal').classList.add('active');
+        }
+
+        function selectOption(value) {
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+                if (opt.querySelector('input').value === value) {
+                    opt.classList.add('selected');
+                }
+            });
+        }
+
+        function submitAnswer() {
+            const selected = document.querySelector('input[name="answer"]:checked');
+            if (!selected) {
+                alert('请选择一个答案！');
+                return;
+            }
+
+            const userAnswer = selected.value;
+            const isCorrect = userAnswer === currentLevel.correct;
+
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.onclick = null;
+                if (opt.querySelector('input').value === currentLevel.correct) {
+                    opt.classList.add('correct');
+                } else if (opt.querySelector('input').value === userAnswer && !isCorrect) {
+                    opt.classList.add('incorrect');
+                }
+            });
+
+            const feedback = document.getElementById('resultFeedback');
+            if (isCorrect) {
+                feedback.className = 'result-feedback success';
+                feedback.innerHTML = '🎉 回答正确！太棒了！';
+                completedLevels.add(currentLevel.id);
+                score += 5;
+                updateProgress();
+
+                setTimeout(() => {
+                    closeModal();
+                    if (completedLevels.size === 20) {
+                        showFinalScore();
+                    }
+                }, 1500);
+            } else {
+                feedback.className = 'result-feedback fail';
+                feedback.innerHTML = '❌ 回答错误！正确答案已高亮显示。';
+            }
+            feedback.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('questionModal').classList.remove('active');
+        }
+
+        function updateProgress() {
+            const percentage = (completedLevels.size / 20) * 100;
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = completedLevels.size + '/20';
+
+            completedLevels.forEach(levelId => {
+                const cards = document.querySelectorAll('.level-card');
+                cards.forEach(card => {
+                    const levelNum = parseInt(card.querySelector('.level-number').textContent);
+                    if (levelNum === levelId) {
+                        card.classList.add('completed');
+                    }
+                });
+            });
+        }
+
+        function showFinalScore() {
+            document.getElementById('totalScore').textContent = score;
+            document.getElementById('scoreMessage').textContent =
+                score === 100 ? '🏆 满分！你已经是编程大师了！' :
+                score >= 80 ? '⭐ 非常棒！你已经掌握了C++基础！' :
+                score >= 60 ? '👍 不错！继续加油！' :
+                '💪 还需要多加练习哦！';
+            document.getElementById('scoreDisplay').classList.add('active');
+        }
+
+        window.onclick = function(e) {
+            if (e.target === document.getElementById('questionModal')) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
